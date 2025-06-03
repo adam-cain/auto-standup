@@ -1,0 +1,487 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// AUTHENTICATION & USERS
+// ============================================================================
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relationships
+  accounts            Account[]
+  sessions            Session[]
+  userRoles           UserRole[]
+  standupResponses    StandupResponse[]
+  createdOrganizations Organization[] @relation("OrganizationCreator")
+
+  @@map("users")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ============================================================================
+// MULTI-TENANT ORGANIZATION STRUCTURE
+// ============================================================================
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  subdomain   String?  @unique
+  description String?
+  logoUrl     String?
+  website     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Subscription info
+  planType        PlanType @default(FREE)
+  subscriptionId  String?
+  customerId      String?
+  subscriptionStatus String?
+  trialEndsAt     DateTime?
+  
+  // Settings
+  timezone        String   @default("UTC")
+  dateFormat      String   @default("MM/DD/YYYY")
+  timeFormat      String   @default("12h")
+  
+  // Branding (white-label)
+  primaryColor    String?
+  secondaryColor  String?
+  customCss       String?  @db.Text
+  
+  // Usage tracking
+  userCount       Int      @default(0)
+  monthlyMessages Int      @default(0)
+  storageUsed     Int      @default(0) // in bytes
+  
+  // Relationships
+  createdBy       String
+  creator         User              @relation("OrganizationCreator", fields: [createdBy], references: [id])
+  teams           Team[]
+  userRoles       UserRole[]
+  standups        Standup[]
+  workflows       Workflow[]
+  integrations    Integration[]
+  templates       Template[]
+  auditLogs       AuditLog[]
+  webhooks        Webhook[]
+
+  @@map("organizations")
+}
+
+enum PlanType {
+  FREE
+  STARTER
+  BUSINESS
+  ENTERPRISE
+}
+
+model Team {
+  id             String   @id @default(cuid())
+  name           String
+  description    String?
+  color          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  // Multi-tenant
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  // Relationships
+  userRoles      UserRole[]
+  standups       Standup[]
+  workflows      Workflow[]
+
+  @@map("teams")
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  level       Int      // Higher number = more permissions
+  permissions Json     // Flexible permissions object
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // System vs Custom roles
+  isSystem    Boolean  @default(false)
+  
+  // Relationships
+  userRoles   UserRole[]
+
+  @@unique([name])
+  @@map("roles")
+}
+
+model UserRole {
+  id     String @id @default(cuid())
+  userId String
+  roleId String
+  
+  // Multi-tenant context
+  organizationId String?
+  teamId         String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relationships
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role         Role          @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  team         Team?         @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId, organizationId, teamId])
+  @@map("user_roles")
+}
+
+// ============================================================================
+// WORKFLOW AUTOMATION ENGINE
+// ============================================================================
+
+model Workflow {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  isTemplate  Boolean  @default(false)
+  
+  // Workflow definition
+  definition  Json     // Complete workflow structure
+  version     Int      @default(1)
+  
+  // Execution settings
+  timezone    String   @default("UTC")
+  
+  // Analytics
+  executionCount Int @default(0)
+  lastExecuted   DateTime?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Multi-tenant
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  // Optional team association
+  teamId String?
+  team   Team?   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  
+  // Relationships
+  executions WorkflowExecution[]
+  standups   Standup[]
+
+  @@map("workflows")
+}
+
+model WorkflowExecution {
+  id         String   @id @default(cuid())
+  workflowId String
+  status     ExecutionStatus @default(PENDING)
+  startedAt  DateTime @default(now())
+  completedAt DateTime?
+  
+  // Execution data
+  input      Json?
+  output     Json?
+  error      String?  @db.Text
+  logs       Json[]   @default([])
+  
+  // Context
+  triggerType String
+  triggeredBy String? // User ID or system
+  
+  // Relationships
+  workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@map("workflow_executions")
+}
+
+enum ExecutionStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+// ============================================================================
+// STANDUP MANAGEMENT (Legacy compatibility)
+// ============================================================================
+
+model Standup {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  
+  // Schedule settings
+  schedule    Json     // Cron expression or schedule config
+  timezone    String   @default("UTC")
+  isActive    Boolean  @default(true)
+  
+  // Question configuration
+  questions   Json     // Array of question objects
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Multi-tenant
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  // Optional associations
+  teamId     String?
+  team       Team?     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  workflowId String?
+  workflow   Workflow? @relation(fields: [workflowId], references: [id], onDelete: SetNull)
+  
+  // Relationships
+  responses StandupResponse[]
+
+  @@map("standups")
+}
+
+model StandupResponse {
+  id        String   @id @default(cuid())
+  standupId String
+  userId    String
+  
+  // Response data
+  responses Json     // Array of responses to questions
+  submittedAt DateTime @default(now())
+  
+  // Metadata
+  platform  String?  // Which platform the response came from
+  messageId String?  // Platform-specific message ID
+  
+  // Relationships
+  standup Standup @relation(fields: [standupId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([standupId, userId, submittedAt])
+  @@map("standup_responses")
+}
+
+// ============================================================================
+// MESSAGING PLATFORM INTEGRATIONS
+// ============================================================================
+
+model Integration {
+  id          String   @id @default(cuid())
+  name        String
+  platform    Platform
+  isActive    Boolean  @default(true)
+  
+  // OAuth/API configuration
+  config      Json     // Platform-specific config (tokens, etc.)
+  
+  // Health monitoring
+  lastChecked DateTime?
+  status      IntegrationStatus @default(PENDING)
+  error       String?   @db.Text
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Multi-tenant
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, platform])
+  @@map("integrations")
+}
+
+enum Platform {
+  SLACK
+  TEAMS
+  DISCORD
+  WHATSAPP
+  TELEGRAM
+  EMAIL
+  SMS
+}
+
+enum IntegrationStatus {
+  PENDING
+  CONNECTED
+  ERROR
+  DISCONNECTED
+}
+
+// ============================================================================
+// TEMPLATES & CONTENT
+// ============================================================================
+
+model Template {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  category    String
+  
+  // Template content
+  config      Json     // Template configuration
+  isPublic    Boolean  @default(false)
+  isOfficial  Boolean  @default(false)
+  
+  // Usage tracking
+  useCount    Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Multi-tenant (null = global template)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("templates")
+}
+
+// ============================================================================
+// ANALYTICS & MONITORING
+// ============================================================================
+
+model AnalyticsEvent {
+  id         String   @id @default(cuid())
+  event      String
+  properties Json?
+  userId     String?
+  sessionId  String?
+  timestamp  DateTime @default(now())
+  
+  // Multi-tenant
+  organizationId String?
+
+  @@index([event, timestamp])
+  @@index([organizationId, timestamp])
+  @@map("analytics_events")
+}
+
+model AuditLog {
+  id       String   @id @default(cuid())
+  action   String
+  resource String
+  resourceId String?
+  userId   String?
+  userEmail  String?
+  details  Json?
+  ipAddress String?
+  userAgent String? @db.Text
+  timestamp DateTime @default(now())
+  
+  // Multi-tenant
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, timestamp])
+  @@index([action, timestamp])
+  @@map("audit_logs")
+}
+
+// ============================================================================
+// WEBHOOKS & EXTERNAL INTEGRATIONS
+// ============================================================================
+
+model Webhook {
+  id          String   @id @default(cuid())
+  name        String
+  url         String
+  events      String[] // Array of event types to listen for
+  isActive    Boolean  @default(true)
+  secret      String?  // For signature verification
+  
+  // Stats
+  deliveryCount   Int @default(0)
+  lastDelivered   DateTime?
+  lastStatus      Int?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Multi-tenant
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("webhooks")
+}
+
+// ============================================================================
+// FILE STORAGE
+// ============================================================================
+
+model FileUpload {
+  id           String   @id @default(cuid())
+  filename     String
+  originalName String
+  mimeType     String
+  size         Int
+  url          String
+  
+  // Metadata
+  uploadedBy   String?
+  description  String?
+  
+  createdAt    DateTime @default(now())
+  
+  // Multi-tenant
+  organizationId String?
+
+  @@map("file_uploads")
+} 
