@@ -141,20 +141,12 @@ async function createSampleOrganization(ownerRoleId: string) {
   })
 
   // Assign owner role to demo user
-  await prisma.userRole.upsert({
-    where: {
-      userId_roleId_organizationId_teamId: {
-        userId: demoUser.id,
-        roleId: ownerRoleId,
-        organizationId: organization.id,
-        teamId: null
-      }
-    },
-    update: {},
-    create: {
+  await prisma.userRole.create({
+    data: {
       userId: demoUser.id,
       roleId: ownerRoleId,
       organizationId: organization.id
+      // teamId is omitted for organization-level roles
     }
   })
 
@@ -349,15 +341,8 @@ async function createWorkflowTemplates(organizationId: string) {
   ]
 
   for (const template of templates) {
-    await prisma.template.upsert({
-      where: {
-        organizationId_name: {
-          organizationId: organizationId,
-          name: template.name
-        }
-      },
-      update: {},
-      create: {
+    await prisma.template.create({
+      data: {
         ...template,
         organizationId: organizationId
       }

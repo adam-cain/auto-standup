@@ -1,4 +1,4 @@
-import { NextAuthConfig } from "next-auth"
+import NextAuth, { NextAuthConfig } from "next-auth"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import Google from "next-auth/providers/google"
 import { db } from "@/lib/db"
@@ -77,4 +77,6 @@ export const authConfig: NextAuthConfig = {
   session: {
     strategy: "database",
   },
-} 
+}
+
+export const { handlers, auth, signIn, signOut } = NextAuth(authConfig) 
