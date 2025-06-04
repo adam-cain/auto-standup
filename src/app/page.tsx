@@ -19,7 +19,7 @@ export default function HomePage() {
           <Link className="text-sm font-medium hover:underline underline-offset-4" href="#pricing">
             Pricing
           </Link>
-          <Link className="text-sm font-medium hover:underline underline-offset-4" href="/auth/signin">
+          <Link className="text-sm font-medium hover:underline underline-offset-4" href="/signin">
             Sign In
           </Link>
         </nav>
@@ -41,7 +41,7 @@ export default function HomePage() {
               </div>
               <div className="space-x-4">
                 <Button asChild size="lg">
-                  <Link href="/auth/signin">
+                  <Link href="/signin">
                     Get Started Free
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
@@ -140,7 +140,7 @@ export default function HomePage() {
               </div>
               <div className="space-x-4">
                 <Button asChild size="lg">
-                  <Link href="/auth/signin">
+                  <Link href="/signin">
                     Start Free Trial
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>

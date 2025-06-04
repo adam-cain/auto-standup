@@ -48,7 +48,7 @@ export default function SignInPage() {
             
             <div className="text-center text-sm text-gray-500">
               Don&apos;t have an account?{" "}
-              <Link href="/auth/signup" className="text-primary hover:underline">
+              <Link href="/signup" className="text-primary hover:underline">
                 Sign up
               </Link>
             </div>
@@ -57,11 +57,11 @@ export default function SignInPage() {
         
         <div className="text-center text-xs text-gray-500">
           By signing in, you agree to our{" "}
-          <Link href="#" className="hover:underline">
+          <Link href="#" className="hover:underline font-bold">
             Terms of Service
           </Link>{" "}
           and{" "}
-          <Link href="#" className="hover:underline">
+          <Link href="#" className="hover:underline font-bold">
             Privacy Policy
           </Link>
         </div>
