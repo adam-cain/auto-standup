@@ -314,7 +314,7 @@ Workflow Optimization Suggestions
 - **Hosting**: Vercel, AWS, or self-hosted
 - **Database**: Supabase, PlanetScale, or AWS RDS
 - **Monitoring**: Sentry, DataDog
-- **CI/CD**: GitHub Actions
+- **CI/CD**: GitHub Actions - runs lint, type-check, and tests on every push
 
 ## 🔒 Security & Compliance
 
