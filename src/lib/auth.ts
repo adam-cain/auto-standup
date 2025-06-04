@@ -2,17 +2,11 @@ import NextAuth, { NextAuthConfig } from "next-auth"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import Google from "next-auth/providers/google"
 import { db } from "@/lib/db"
+import { SessionUser } from "@/types"
 
 declare module "next-auth" {
   interface Session {
-    user: {
-      id: string
-      name?: string | null
-      email?: string | null
-      image?: string | null
-      organizationId?: string | null
-      role?: string | null
-    }
+    user: SessionUser
   }
 }
 

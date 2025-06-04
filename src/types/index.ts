@@ -102,13 +102,9 @@ export interface CreateWorkflowData {
 }
 
 // Authentication types
-export interface SessionUser {
-  id: string
-  name?: string | null
-  email?: string | null
-  image?: string | null
-  organizationId?: string
-  role?: string
+export interface SessionUser extends Pick<User, 'id' | 'name' | 'email' | 'image'> {
+  organizationId?: string | null
+  role?: string | null
 }
 
 // Analytics types
