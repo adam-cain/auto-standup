@@ -1,6 +1,8 @@
 import NextAuth, { NextAuthConfig } from "next-auth"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import Google from "next-auth/providers/google"
+import Credentials from "next-auth/providers/credentials"
+import bcrypt from "bcryptjs"
 import { db } from "@/lib/db"
 import { SessionUser } from "@/types"
 
@@ -16,6 +18,32 @@ export const authConfig: NextAuthConfig = {
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+    Credentials({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "text" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials.password) {
+          return null
+        }
+        const user = await db.user.findUnique({
+          where: { email: credentials.email },
+        })
+        if (!user || !user.hashedPassword) {
+          return null
+        }
+        const isValid = await bcrypt.compare(
+          credentials.password as string,
+          user.hashedPassword as string
+        )
+        if (!isValid) {
+          return null
+        }
+        return user
+      },
     }),
   ],
   // Custom sign in page

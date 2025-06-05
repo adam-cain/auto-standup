@@ -158,4 +158,4 @@ export interface WebhookEvent {
   organizationId: string
 }
 
-export { Platform, PlanType } 
+export type { Platform, PlanType }
