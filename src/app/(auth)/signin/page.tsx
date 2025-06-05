@@ -19,7 +19,7 @@ export default function SignInPage() {
       password,
       redirectTo: '/dashboard',
     })
-    if ((res as any)?.error) {
+    if (res?.error) {
       setError('Invalid credentials')
     }
   }

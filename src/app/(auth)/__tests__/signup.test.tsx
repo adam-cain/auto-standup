@@ -5,7 +5,9 @@ import { signIn } from '@/lib/auth'
 jest.mock('@/lib/auth', () => ({ signIn: jest.fn() }))
 
 beforeEach(() => {
-  global.fetch = jest.fn(() => Promise.resolve({ ok: true })) as any
+  global.fetch = jest.fn(
+    () => Promise.resolve({ ok: true })
+  ) as unknown as typeof fetch
 })
 
 describe('SignUpPage', () => {
