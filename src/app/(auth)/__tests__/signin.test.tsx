@@ -6,8 +6,7 @@ jest.mock('@/lib/auth', () => ({ signIn: jest.fn() }))
 
 describe('SignInPage', () => {
   beforeEach(() => {
-    delete (window as any).location
-    ;(window as any).location = { href: '', assign: jest.fn() }
+    jest.clearAllMocks()
   })
 
   it('calls signIn with credentials', async () => {
