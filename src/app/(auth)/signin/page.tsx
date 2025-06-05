@@ -17,10 +17,12 @@ export default function SignInPage() {
     const res = await signIn('credentials', {
       email,
       password,
-      redirectTo: '/dashboard',
+      redirect: false,
     })
     if (res?.error) {
       setError('Invalid credentials')
+    } else {
+      window.location.href = '/dashboard'
     }
   }
 
