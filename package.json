@@ -12,7 +12,7 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
-    "db:seed": "tsx prisma/seed.ts",
+    "db:seed": "npx tsc prisma/seed.ts --outDir temp --target es2020 --module commonjs --esModuleInterop && node temp/seed.js && rm -rf temp",
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset",
     "docker:up": "docker-compose up -d",
