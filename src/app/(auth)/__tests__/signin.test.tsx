@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import SignInPage from '../signin/page'
+import SignInPage from '../login/page'
 import { signIn } from '@/lib/auth'
 
 jest.mock('@/lib/auth', () => ({ signIn: jest.fn() }))

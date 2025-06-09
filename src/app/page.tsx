@@ -1,9 +1,10 @@
+"use server"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowRight, Bot, Calendar, MessageSquare, Users, Zap, BarChart3 } from "lucide-react"
 
-export default function HomePage() {
+export default async function HomePage() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}
@@ -19,8 +20,8 @@ export default function HomePage() {
           <Link className="text-sm font-medium hover:underline underline-offset-4" href="#pricing">
             Pricing
           </Link>
-          <Link className="text-sm font-medium hover:underline underline-offset-4" href="/signin">
-            Sign In
+          <Link className="text-sm font-medium hover:underline underline-offset-4" href="/login">
+            Login
           </Link>
         </nav>
       </header>
@@ -35,13 +36,13 @@ export default function HomePage() {
                   Automate Your Team&apos;s Daily Standups
                 </h1>
                 <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">
-                  Transform team communication with intelligent automation. Create custom workflows, 
+                  Transform team communication with intelligent automation. Create custom workflows,
                   collect responses, and generate insights across Slack, Teams, Discord, and more.
                 </p>
               </div>
               <div className="space-x-4">
                 <Button asChild size="lg">
-                  <Link href="/signin">
+                  <Link href="/login">
                     Get Started Free
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
@@ -140,7 +141,7 @@ export default function HomePage() {
               </div>
               <div className="space-x-4">
                 <Button asChild size="lg">
-                  <Link href="/signin">
+                  <Link href="/login">
                     Start Free Trial
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>

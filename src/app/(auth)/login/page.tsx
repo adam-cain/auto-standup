@@ -6,12 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Bot } from "lucide-react"
 import { signIn } from "@/lib/auth"
 
-export default function SignInPage() {
+export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
 
-  async function onSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
+  async function onSubmit(formData: FormData) {
     const email = String(formData.get('email'))
     const password = String(formData.get('password'))
     const res = await signIn('credentials', {
@@ -22,7 +20,8 @@ export default function SignInPage() {
     if (res?.error) {
       setError('Invalid credentials')
     } else {
-      window.location.href = '/dashboard'
+      // window.location.href = '/dashboard'
+      console.log("redirect here")
     }
   }
 
@@ -47,7 +46,7 @@ export default function SignInPage() {
             {error && (
               <p className="text-red-500 text-sm text-center">{error}</p>
             )}
-            <form onSubmit={onSubmit} className="space-y-4">
+            <form action={onSubmit} className="space-y-4">
               <input
                 name="email"
                 type="email"
@@ -101,7 +100,7 @@ export default function SignInPage() {
         </Card>
         
         <div className="text-center text-xs text-gray-500">
-          By signing in, you agree to our{" "}
+          By logging in, you agree to our{" "}
           <Link href="#" className="hover:underline font-bold">
             Terms of Service
           </Link>{" "}

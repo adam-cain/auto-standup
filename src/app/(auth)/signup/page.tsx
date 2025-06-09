@@ -1,33 +1,24 @@
 "use client"
-import { FormEvent, useState } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Bot } from "lucide-react"
-import { signIn } from "@/lib/auth"
+import { signUp } from "@/lib/auth"
 
 export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null)
 
-  async function onSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    const name = String(formData.get('name'))
+  async function onSubmit(formData: FormData) {
+    "use server"
     const email = String(formData.get('email'))
     const password = String(formData.get('password'))
-
-    const res = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password }),
-    })
-
-    if (!res.ok) {
-      setError('Failed to create account')
-      return
+    const res = await signUp(email, password)
+    if (res.success) {
+      // redirect('/dashboard')
+    } else {
+      setError(res.error || "An error occurred during signup")
     }
-
-    await signIn('credentials', { email, password, redirectTo: '/dashboard' })
   }
 
   return (
@@ -48,7 +39,7 @@ export default function SignUpPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-            <form onSubmit={onSubmit} className="space-y-4">
+            <form action={onSubmit} className="space-y-4">
               <input
                 name="name"
                 type="text"
@@ -76,8 +67,8 @@ export default function SignUpPage() {
             </form>
             <div className="text-center text-sm text-gray-500">
               Already have an account?{' '}
-              <Link href="/signin" className="text-primary hover:underline">
-                Sign in
+              <Link href="/login" className="text-primary hover:underline">
+                Login
               </Link>
             </div>
           </CardContent>
