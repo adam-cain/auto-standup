@@ -68,3 +68,28 @@ export async function signUp(email: string, password: string) {
     return { success: false, error: "An error occurred during signup" };
   }
 }
+
+// Server action for user login
+export async function loginUser(email: string, password: string) {
+  try {
+    // Validate input
+    if (!email || !password) {
+      return { success: false, error: "Email and password are required" };
+    }
+
+    const result = await signIn("credentials", {
+      email: email.toLowerCase(),
+      password: password,
+      redirect: false,
+    });
+
+    if (result?.error) {
+      return { success: false, error: "Invalid credentials" };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Login error:", error);
+    return { success: false, error: "An error occurred during login" };
+  }
+}

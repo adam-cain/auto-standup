@@ -1,3 +1,4 @@
+"use server"
 import bcrypt from "bcrypt"
 
 export const saltAndHashPassword = (password: string) => {

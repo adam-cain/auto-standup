@@ -5,17 +5,18 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Bot } from "lucide-react"
 import { signUp } from "@/lib/auth"
+import { redirect } from "next/navigation"
 
 export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null)
 
   async function onSubmit(formData: FormData) {
-    "use server"
     const email = String(formData.get('email'))
     const password = String(formData.get('password'))
     const res = await signUp(email, password)
     if (res.success) {
-      // redirect('/dashboard')
+      // I think redirect happens here automatically
+      // redirect('/onboarding')
     } else {
       setError(res.error || "An error occurred during signup")
     }
