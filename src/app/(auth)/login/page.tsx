@@ -52,7 +52,7 @@ export default function LoginPage(props: {
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
             <CardDescription className="text-center">
-              Sign in to your account to continue
+              Login to your account to continue
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -104,7 +104,7 @@ export default function LoginPage(props: {
           }}
         >
           <button type="submit">
-            <span>Sign in with {provider.name}</span>
+            <span>Login with {provider.name}</span>
           </button>
         </form>
       ))}

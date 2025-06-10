@@ -28,7 +28,7 @@ const providers: Provider[] = [
         throw new Error("email or password is incorrect");
       }
 
-      const isValidPassword = verifyPassword(
+      const isValidPassword = await verifyPassword(
         credentials.password as string,
         user.hashedPassword as string
       );
@@ -56,19 +56,19 @@ export const providerMap = providers
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers,
-  callbacks: {
-    authorized: async ({ auth }) => {
-      // Logged in users are authenticated, otherwise redirect to login page
-      return !!auth;
-    },
-    jwt: async ({ token, user }) => {
-      if (user) {
-        token.id = user.id;
-        token.email = user.email;
-      }
-      return token;
-    },
-  },
+  // callbacks: {
+  //   authorized: async ({ auth }) => {
+  //     // Logged in users are authenticated, otherwise redirect to login page
+  //     return !!auth;
+  //   },
+  //   jwt: async ({ token, user }) => {
+  //     if (user) {
+  //       token.id = user.id;
+  //       token.email = user.email;
+  //     }
+  //     return token;
+  //   },
+  // },
   session: {
     strategy: "jwt",
   },
@@ -78,7 +78,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
     signIn: "/login",
     error: "/login",
-    newUser: "/onboarding",
+    // newUser: "/onboarding",
     signOut: "/",
   },
 });

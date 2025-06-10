@@ -15,8 +15,7 @@ export default function SignUpPage() {
     const password = String(formData.get('password'))
     const res = await signUp(email, password)
     if (res.success) {
-      // I think redirect happens here automatically
-      // redirect('/onboarding')
+      redirect('/onboarding')
     } else {
       setError(res.error || "An error occurred during signup")
     }
@@ -41,13 +40,6 @@ export default function SignUpPage() {
           <CardContent className="space-y-4">
             {error && <p className="text-red-500 text-sm text-center">{error}</p>}
             <form action={onSubmit} className="space-y-4">
-              <input
-                name="name"
-                type="text"
-                placeholder="Name"
-                className="w-full border rounded px-3 py-2 text-black"
-                required
-              />
               <input
                 name="email"
                 type="email"

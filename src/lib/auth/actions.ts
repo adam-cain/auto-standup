@@ -36,7 +36,7 @@ export async function signUp(email: string, password: string) {
     }
 
     // Hash the password
-    const hashedPassword = saltAndHashPassword(password);
+    const hashedPassword = await saltAndHashPassword(password);
 
     // Create the user
     const user = await prisma.user.create({
@@ -50,7 +50,7 @@ export async function signUp(email: string, password: string) {
       await signIn("credentials", {
         email: email.toLowerCase(),
         password: password,
-        redirect: true,
+        redirect: false,
       });
       return {
         success: true,
@@ -77,6 +77,7 @@ export async function loginUser(email: string, password: string) {
       return { success: false, error: "Email and password are required" };
     }
 
+    // Password hashed in the signIn function
     const result = await signIn("credentials", {
       email: email.toLowerCase(),
       password: password,

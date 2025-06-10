@@ -1,11 +1,11 @@
 "use server"
 import bcrypt from "bcrypt"
 
-export const saltAndHashPassword = (password: string) => {
-  const salt = bcrypt.genSaltSync(10)
-  return bcrypt.hashSync(password, salt)
+export const saltAndHashPassword = async (password: string) => {
+  const salt = await bcrypt.genSalt(10)
+  return await bcrypt.hash(password, salt)
 }
 
-export const verifyPassword = (password: string, hash: string) => {
-  return bcrypt.compareSync(password, hash)
+export const verifyPassword = async (password: string, hash: string) => {
+  return await bcrypt.compare(password, hash)
 }
